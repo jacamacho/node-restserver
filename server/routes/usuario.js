@@ -2,12 +2,17 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const _ = require('underscore');
 const Usuario = require('../models/usuario');
+const { verificaToken, verificarRol } = require('../middlewares/authentication');
 const app = express();
 
-app.get('/usuario', (req, res) => {
+app.get('/usuario', verificaToken, (req, res) => {
     let limite = Number(req.query.limite) || 5;
     let page = limite * (Number(req.query.page) || 0);
-
+    // return res.json({
+    //     usuario: req.usuario,
+    //     nombre: req.usuario.nombre,
+    //     email: req.usuario.email
+    // });
     Usuario.find({ estado: true /** SE PUEDEN UBICAR CONDICIONES PARA LA BUSQUEDA */ }, 'nombre email rol google estado img')
         .skip(page)
         .limit(limite)
@@ -24,7 +29,7 @@ app.get('/usuario', (req, res) => {
         });
 });
 
-app.post('/usuario', (req, res) => {
+app.post('/usuario', [verificaToken, verificarRol], (req, res) => {
     let body = req.body;
     let usuario = new Usuario({
         nombre: body.nombre,
@@ -44,7 +49,7 @@ app.post('/usuario', (req, res) => {
     });
 });
 
-app.put('/usuario/:id', (req, res) => {
+app.put('/usuario/:id', [verificaToken, verificarRol], (req, res) => {
     let id = req.params.id;
     let body = _.pick(req.body, ['nombre', 'email', 'img', 'rol', 'estado']);
     Usuario.findByIdAndUpdate(id, body, { new: true, runValidators: true, context: 'query' }, (err, usuarioDB) => {
@@ -58,7 +63,7 @@ app.put('/usuario/:id', (req, res) => {
     });
 });
 
-app.delete('/usuario/:id', (req, res) => {
+app.delete('/usuario/:id', [verificaToken, verificarRol], (req, res) => {
     let id = req.params.id;
 
     /** PARA BORRAR UN USUARIO DEFINITIVO */
