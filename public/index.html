@@ -29,7 +29,6 @@
             xhr.onload = function() {
                 console.log('Signed in as: ' + xhr.responseText);
             };
-            console.log(id_token);
             xhr.send('googletoken=' + id_token);
         }
 
